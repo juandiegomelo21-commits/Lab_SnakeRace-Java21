@@ -1,0 +1,35 @@
+[33m2c7607c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/solucion-lab2[m[33m, [m[1;31morigin/feature/solucion-lab2[m[33m)[m el cambio de concurrencia y engine
+ .../java/co/eci/snake/concurrency/SnakeRunner.java | 72 [32m+++++++++++++++++[m[31m--[m
+ .../java/co/eci/snake/core/engine/GameClock.java   | 84 [32m+++++++++++++++++++[m[31m---[m
+ 2 files changed, 142 insertions(+), 14 deletions(-)
+[33m790b0a8[m feat(core): implementa modelo de dominio
+ src/main/java/co/eci/snake/core/Board.java | 118 [32m++++++++++++++++++++[m[31m---[m
+ src/main/java/co/eci/snake/core/Snake.java | 145 [32m++++++++++++++++++++++++++[m[31m---[m
+ 2 files changed, 237 insertions(+), 26 deletions(-)
+[33m551fc3c[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m innitial commite
+ README.md | 4 [32m++[m[31m--[m
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+[33m826a193[m innitial commite
+ README.md | 12 [32m++++++[m[31m------[m
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+[33mae3b559[m innitial commite
+ README.md | 2 [32m+[m[31m-[m
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+[33me727995[m innitial commite
+ .gitignore                                         |   5 [32m+[m
+ README.md                                          | 152 [32m++++++++++++[m[31m-[m
+ pom.xml                                            |  49 [32m+++++[m
+ src/main/java/co/eci/snake/app/Main.java           |  10 [32m+[m
+ .../java/co/eci/snake/concurrency/SnakeRunner.java |  50 [32m+++++[m
+ src/main/java/co/eci/snake/core/Board.java         |  90 [32m++++++++[m
+ src/main/java/co/eci/snake/core/Direction.java     |   4 [32m+[m
+ src/main/java/co/eci/snake/core/GameState.java     |   2 [32m+[m
+ src/main/java/co/eci/snake/core/Position.java      |   9 [32m+[m
+ src/main/java/co/eci/snake/core/Snake.java         |  41 [32m++++[m
+ .../java/co/eci/snake/core/engine/GameClock.java   |  35 [32m+++[m
+ src/main/java/co/eci/snake/ui/legacy/SnakeApp.java | 236 [32m+++++++++++++++++++++[m
+ 12 files changed, 681 insertions(+), 2 deletions(-)
+[33m4bde3d5[m Initial commit
+ LICENSE   | 21 [32m+++++++++++++++++++++[m
+ README.md |  2 [32m++[m
+ 2 files changed, 23 insertions(+)
