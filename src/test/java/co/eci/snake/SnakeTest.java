@@ -13,39 +13,40 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Pruebas unitarias para validar la seguridad en subprocesos (Thread Safety) y la lógica de Snake.
- */
 class SnakeTest {
 
     @Test
-    @DisplayName("Debe impedir giros directos de 180 grados")
+    @DisplayName("Impedir giros opuestos de 180 grados")
     void testInvalidTurn() {
         Snake snake = Snake.of(1, 5, 5, Direction.UP);
-        snake.turn(Direction.DOWN); // Intento de giro opuesto de 180°
-        assertEquals(Direction.UP, snake.direction(), "No debe permitir giro directo de 180 grados");
+        snake.turn(Direction.DOWN);
+        assertEquals(Direction.UP, snake.direction());
 
         snake.turn(Direction.RIGHT);
         assertEquals(Direction.RIGHT, snake.direction());
 
         snake.turn(Direction.LEFT);
-        assertEquals(Direction.RIGHT, snake.direction(), "No debe permitir giro opuesto de RIGHT a LEFT");
+        assertEquals(Direction.RIGHT, snake.direction());
     }
 
     @Test
-    @DisplayName("Debe gestionar correctamente el ciclo de vida y muerte de la serpiente")
+    @DisplayName("Gestion de estado y muerte de la serpiente")
     void testSnakeLifecycle() {
         Snake snake = Snake.of(1, 10, 10, Direction.RIGHT);
         assertTrue(snake.isAlive());
         assertEquals(-1, snake.getDeathTimestamp());
 
-        snake.markDead();
+        boolean marked = snake.markDead();
+        assertTrue(marked);
         assertFalse(snake.isAlive());
         assertTrue(snake.getDeathTimestamp() > 0);
+
+        boolean secondMark = snake.markDead();
+        assertFalse(secondMark);
     }
 
     @Test
-    @DisplayName("Debe ser seguro ante lecturas y escrituras concurrentes (sin ConcurrentModificationException)")
+    @DisplayName("Lecturas y escrituras concurrentes sin ConcurrentModificationException")
     void testConcurrentReadAndWrite() throws InterruptedException {
         Snake snake = Snake.of(1, 0, 0, Direction.RIGHT);
         int iterations = 10_000;
@@ -54,7 +55,7 @@ class SnakeTest {
 
         var executor = Executors.newFixedThreadPool(2);
 
-        // Hilo escritor (simula SnakeRunner)
+        // Hilo escritor
         executor.submit(() -> {
             try {
                 for (int i = 0; i < iterations; i++) {
@@ -67,7 +68,7 @@ class SnakeTest {
             }
         });
 
-        // Hilo lector (simula Swing EDT en paintComponent)
+        // Hilo lector
         executor.submit(() -> {
             try {
                 for (int i = 0; i < iterations; i++) {
@@ -85,7 +86,7 @@ class SnakeTest {
         boolean finished = latch.await(5, TimeUnit.SECONDS);
         executor.shutdown();
 
-        assertTrue(finished, "Las operaciones concurrentes debieron finalizar en el tiempo límite");
-        assertFalse(errorOccurred.get(), "No deben ocurrir excepciones durante lectura/escritura concurrente");
+        assertTrue(finished);
+        assertFalse(errorOccurred.get(), "No deben ocurrir excepciones de modificacion concurrente");
     }
 }

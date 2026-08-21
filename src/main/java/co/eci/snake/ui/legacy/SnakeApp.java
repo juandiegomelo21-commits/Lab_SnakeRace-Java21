@@ -16,14 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
-/**
- * Ventana principal y control de interfaz gráfica para SnakeRace.
- *
- * Administra el tablero de juego, el panel de dibujo (GamePanel), los controles de teclado
- * para los jugadores 1 y 2, el botón de acción para Pausar/Reanudar y la barra de estado
- * que muestra de forma consistente las estadísticas del juego al pausar (la serpiente viva
- * más larga y la peor serpiente / primera en morir).
- */
 public final class SnakeApp extends JFrame {
 
   private final Board board;
@@ -34,7 +26,7 @@ public final class SnakeApp extends JFrame {
   private final java.util.List<Snake> snakes = new java.util.ArrayList<>();
 
   public SnakeApp() {
-    super("The Snake Race — Concurrencia Java 21");
+    super("The Snake Race — Java 21");
     this.board = new Board(35, 28);
 
     int N = Integer.getInteger("snakes", 2);
@@ -42,7 +34,6 @@ public final class SnakeApp extends JFrame {
       int x = 2 + (i * 3) % board.width();
       int y = 2 + (i * 2) % board.height();
       var dir = Direction.values()[i % Direction.values().length];
-      // Se asigna un identificador único (1-indexed) a cada serpiente
       snakes.add(Snake.of(i + 1, x, y, dir));
     }
 
@@ -51,7 +42,6 @@ public final class SnakeApp extends JFrame {
     this.actionButton.setFont(new Font("SansSerif", Font.BOLD, 14));
     this.actionButton.setFocusable(false);
 
-    // Barra de estado para estadísticas en pausa
     this.statsLabel = new JLabel("Estado: En ejecución — Presione ESPACIO o 'Action' para pausar", SwingConstants.CENTER);
     this.statsLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
     this.statsLabel.setBorder(new EmptyBorder(8, 8, 8, 8));
@@ -67,16 +57,13 @@ public final class SnakeApp extends JFrame {
     pack();
     setLocationRelativeTo(null);
 
-    // Reloj del juego que coordina los repintados en el hilo gráfico de Swing (EDT)
     this.clock = new GameClock(60, () -> SwingUtilities.invokeLater(gamePanel::repaint));
 
-    // Ejecución de cada serpiente de forma autónoma en un Virtual Thread
     var exec = Executors.newVirtualThreadPerTaskExecutor();
     snakes.forEach(s -> exec.submit(new SnakeRunner(s, board, clock)));
 
     actionButton.addActionListener((ActionEvent e) -> togglePause());
 
-    // Atajo de teclado: Barra espaciadora para Pausar / Reanudar
     gamePanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("SPACE"), "pause");
     gamePanel.getActionMap().put("pause", new AbstractAction() {
       @Override
@@ -135,17 +122,10 @@ public final class SnakeApp extends JFrame {
     clock.start();
   }
 
-  /**
-   * Alterna entre el estado de Pausa y Reanudación de la partida.
-   * Al pausar, suspende tanto el reloj como los Virtual Threads y calcula de forma
-   * consistente las estadísticas para mostrarlas en la UI sin tearing.
-   */
   private void togglePause() {
     if ("Action".equals(actionButton.getText())) {
       actionButton.setText("Resume");
       clock.pause();
-
-      // Programamos la actualización de estadísticas en el hilo EDT de Swing
       SwingUtilities.invokeLater(this::updatePauseStatistics);
     } else {
       actionButton.setText("Action");
@@ -154,19 +134,12 @@ public final class SnakeApp extends JFrame {
     }
   }
 
-  /**
-   * Calcula y despliega en la barra superior las estadísticas de la partida:
-   * 1. La serpiente viva más larga.
-   * 2. La peor serpiente (la primera que falleció).
-   */
   private void updatePauseStatistics() {
-    // 1. Identificar la serpiente viva con mayor longitud
     Snake longestLiving = snakes.stream()
             .filter(Snake::isAlive)
             .max(Comparator.comparingInt(Snake::size))
             .orElse(null);
 
-    // 2. Identificar la primera serpiente fallecida
     Snake firstDead = board.getFirstDeadSnake();
 
     String longestInfo = (longestLiving != null)
@@ -177,7 +150,7 @@ public final class SnakeApp extends JFrame {
             ? String.format("Serpiente #%d", firstDead.getId())
             : "Ninguna ha muerto";
 
-    statsLabel.setText(String.format("⏸️ PAUSA | Viva más larga: %s | Peor serpiente (primera en morir): %s", longestInfo, deadInfo));
+    statsLabel.setText(String.format("PAUSA | Viva más larga: %s | Peor serpiente (primera en morir): %s", longestInfo, deadInfo));
     gamePanel.repaint();
   }
 
@@ -206,12 +179,14 @@ public final class SnakeApp extends JFrame {
 
       // Grilla de fondo
       g2.setColor(new Color(220, 220, 220));
-      for (int x = 0; x <= board.width(); x++)
+      for (int x = 0; x <= board.width(); x++) {
         g2.drawLine(x * cell, 0, x * cell, board.height() * cell);
-      for (int y = 0; y <= board.height(); y++)
+      }
+      for (int y = 0; y <= board.height(); y++) {
         g2.drawLine(0, y * cell, board.width() * cell, y * cell);
+      }
 
-      // Obstáculos (naranjas con textura)
+      // Obstáculos
       g2.setColor(new Color(255, 102, 0));
       for (var p : board.obstacles()) {
         int x = p.x() * cell, y = p.y() * cell;
@@ -223,7 +198,7 @@ public final class SnakeApp extends JFrame {
         g2.setColor(new Color(255, 102, 0));
       }
 
-      // Ratones (comida)
+      // Ratones
       g2.setColor(Color.BLACK);
       for (var p : board.mice()) {
         int x = p.x() * cell, y = p.y() * cell;
@@ -233,7 +208,7 @@ public final class SnakeApp extends JFrame {
         g2.setColor(Color.BLACK);
       }
 
-      // Teleports (flechas rojas)
+      // Teleports
       Map<Position, Position> tp = board.teleports();
       g2.setColor(Color.RED);
       for (var entry : tp.entrySet()) {
@@ -244,8 +219,8 @@ public final class SnakeApp extends JFrame {
         g2.fillPolygon(xs, ys, xs.length);
       }
 
-      // Turbo (rayos de velocidad)
-      g2.setColor(new Color(218, 165, 32)); // Color dorado/amarillo
+      // Turbo
+      g2.setColor(new Color(218, 165, 32));
       for (var p : board.turbo()) {
         int x = p.x() * cell, y = p.y() * cell;
         int[] xs = { x + 8, x + 12, x + 10, x + 14, x + 6, x + 10 };
@@ -257,19 +232,17 @@ public final class SnakeApp extends JFrame {
       var currentSnakes = snakesSupplier.get();
       int idx = 0;
       for (Snake s : currentSnakes) {
-        // Obtenemos una copia defensiva atómica y segura mediante snapshot()
         var body = s.snapshot().toArray(new Position[0]);
         for (int i = 0; i < body.length; i++) {
           var p = body[i];
           Color base;
           if (!s.isAlive()) {
-            base = Color.GRAY; // Serpientes muertas en tono gris
+            base = Color.GRAY;
           } else if (idx == 0) {
-            base = new Color(0, 170, 0); // Jugador 1: Verde
+            base = new Color(0, 170, 0);
           } else if (idx == 1) {
-            base = new Color(0, 160, 180); // Jugador 2: Cyan/Azul
+            base = new Color(0, 160, 180);
           } else {
-            // Serpientes adicionales en tonos diferenciados
             base = new Color((idx * 67) % 200 + 30, (idx * 113) % 200 + 30, (idx * 179) % 200 + 30);
           }
 

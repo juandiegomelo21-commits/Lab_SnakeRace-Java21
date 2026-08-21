@@ -12,13 +12,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Pruebas unitarias para GameClock validando la coordinación de pausa y reanudación con wait/notify.
- */
 class GameClockTest {
 
     @Test
-    @DisplayName("Debe coordinar pausa y reanudación de hilos concurrentes correctamente")
+    @DisplayName("Coordinacion de pausa y reanudacion con wait y notify")
     void testPauseAndResume() throws InterruptedException {
         try (GameClock clock = new GameClock(50, () -> {})) {
             clock.start();
@@ -36,23 +33,23 @@ class GameClockTest {
             exec.submit(() -> {
                 try {
                     waitingLatch.countDown();
-                    clock.checkPaused(); // Se suspende en wait()
+                    clock.checkPaused();
                     threadProceeded.set(true);
                     resumedLatch.countDown();
                 } catch (InterruptedException ignored) {}
             });
 
             waitingLatch.await(2, TimeUnit.SECONDS);
-            Thread.sleep(100); // Tiempo para que el hilo virtual entre en wait()
+            Thread.sleep(100);
 
-            assertFalse(threadProceeded.get(), "El hilo debe permanecer suspendido mientras esté en pausa");
+            assertFalse(threadProceeded.get(), "El hilo debe permanecer suspendido durante la pausa");
 
             clock.resume();
             assertEquals(GameState.RUNNING, clock.getState());
             assertFalse(clock.isPaused());
 
             boolean resumed = resumedLatch.await(2, TimeUnit.SECONDS);
-            assertTrue(resumed, "El hilo debe reanudar inmediatamente al llamar clock.resume()");
+            assertTrue(resumed, "El hilo debe continuar tras llamar resume()");
             assertTrue(threadProceeded.get());
         }
     }
